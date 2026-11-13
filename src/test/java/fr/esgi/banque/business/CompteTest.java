@@ -91,5 +91,40 @@ class CompteTest {
 
 		assertThrows(IllegalArgumentException.class, () -> compte.debiter(BigDecimal.ZERO));
 	}
-	
+
+	@Test
+	void debiter_soldeSuperieurALaLimite_debitAccepte() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		compte.debiter(new BigDecimal("120"));
+
+		assertEquals(0, new BigDecimal("-20").compareTo(compte.getSolde()));
+	}
+
+	@Test
+	void debiter_soldeEgalALaLimite_debitAccepte() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		compte.debiter(new BigDecimal("150"));
+
+		assertEquals(0, new BigDecimal("-50").compareTo(compte.getSolde()));
+	}
+
+	@Test
+	void debiter_soldeInferieurALaLimite_leveSoldeInsuffisantException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(SoldeInsuffisantException.class, () -> compte.debiter(new BigDecimal("151")));
+	}
+
+	@Test
+	void debiter_soldeInsuffisant_soldeInchange() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		BigDecimal soldeInitial = compte.getSolde();
+
+		assertThrows(SoldeInsuffisantException.class, () -> compte.debiter(new BigDecimal("151")));
+
+		assertEquals(0, soldeInitial.compareTo(compte.getSolde()));
+	}
 }
