@@ -142,4 +142,29 @@ class CalculFraisTest {
         assertEquals(0, new BigDecimal("2.00").compareTo(resultat));
     }
 
+    // F4 - Les frais de tenue sont offerts si le solde moyen atteint 1 000 € ou
+    // plus.
+
+    @ParameterizedTest
+    @CsvSource({
+            "999.99, 2.00",
+            "1000.00, 0.00",
+            "1000.01, 0.00",
+            "1500.00, 0.00"
+    })
+    void fraisMensuels_selonSoldeMoyen_appliqueFraisAttendus(
+            String solde, String fraisAttendus) {
+
+        // Arrange
+        CalculFrais calculFrais = new CalculFrais();
+        BigDecimal soldeMoyen = new BigDecimal(solde);
+        BigDecimal attendu = new BigDecimal(fraisAttendus);
+
+        // Act
+        BigDecimal resultat = calculFrais.fraisMensuels(
+                30, soldeMoyen, false);
+
+        // Assert
+        assertEquals(0, attendu.compareTo(resultat));
+    }
 }
