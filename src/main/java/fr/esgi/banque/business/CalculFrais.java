@@ -24,6 +24,10 @@ public class CalculFrais {
 	static final BigDecimal SEUIL_GRATUITE = new BigDecimal("1000");
 
 	public BigDecimal fraisMensuels(int ageTitulaire, BigDecimal soldeMoyen, boolean cartePremium) {
+		BigDecimal frais = FRAIS_TENUE;
+		if (cartePremium) {
+			frais = frais.add(SUPPLEMENT_PREMIUM);
+		}
 		if (ageTitulaire < AGE_MAJORITE) {
 			throw new IllegalArgumentException("Le titulaire doit être majeur");
 		}
@@ -31,14 +35,12 @@ public class CalculFrais {
 			throw new IllegalArgumentException("Le solde moyen est obligatoire");
 		}
 		if (ageTitulaire < AGE_JEUNE) {
-			return BigDecimal.ZERO;
+			frais = frais.subtract(FRAIS_TENUE);
+			return frais;
 		}
 		if (soldeMoyen.compareTo(SEUIL_GRATUITE) >= 0) {
-			return BigDecimal.ZERO;
-		}
-		BigDecimal frais = FRAIS_TENUE;
-		if (cartePremium) {
-			frais = frais.add(SUPPLEMENT_PREMIUM);
+			frais = frais.subtract(FRAIS_TENUE);
+			return frais;
 		}
 		return frais;
 	}
