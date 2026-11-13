@@ -165,4 +165,32 @@ class CompteTest {
 		assertFalse(compte.estVide());
 	}
 
+	@Test
+	void estADecouvert_soldeNegatif_retourneTrue() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("-10"), new BigDecimal("50"));
+
+		assertTrue(compte.estADecouvert());
+	}
+
+	@Test
+	void estADecouvert_soldeZero_retourneFalse() {
+		Compte compte = new Compte("123", "Theo", BigDecimal.ZERO, new BigDecimal("50"));
+
+		assertFalse(compte.estADecouvert());
+	}
+
+	@Test
+	void estADecouvert_soldePositif_retourneFalse() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertFalse(compte.estADecouvert());
+	}
+
+	@Test
+	void estADecouvert_soldeNegatifAvecDecimales_retourneTrue() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("-0.01"), new BigDecimal("50"));
+
+		assertTrue(compte.estADecouvert());
+	}
+
 }
