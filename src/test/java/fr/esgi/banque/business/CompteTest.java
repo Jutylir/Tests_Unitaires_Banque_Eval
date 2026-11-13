@@ -42,24 +42,54 @@ class CompteTest {
 	}
 
 	@Test
-    void constructeur_soldeInitialNull_leveIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Compte("123", "Theo", null, new BigDecimal("100"))
-        );
-    }
+	void constructeur_soldeInitialNull_leveIllegalArgumentException() {
+		assertThrows(IllegalArgumentException.class, () -> new Compte("123", "Theo", null, new BigDecimal("100")));
+	}
 
-    @Test
-    void constructeur_decouvertAutoriseNull_leveIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Compte("123", "Theo", new BigDecimal("100"), null)
-        );
-    }
+	@Test
+	void constructeur_decouvertAutoriseNull_leveIllegalArgumentException() {
+		assertThrows(IllegalArgumentException.class, () -> new Compte("123", "Theo", new BigDecimal("100"), null));
+	}
 
-    @Test
-    void constructeur_decouvertNegatif_leveIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("-1"))
-        );
-    }
+	@Test
+	void constructeur_decouvertNegatif_leveIllegalArgumentException() {
+		assertThrows(IllegalArgumentException.class,
+				() -> new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("-1")));
+	}
 
+	@Test
+	void crediter_montantNull_leveIllegalArgumentException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(IllegalArgumentException.class, () -> compte.crediter(null));
+	}
+
+	@Test
+	void crediter_montantNegatif_leveIllegalArgumentException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(IllegalArgumentException.class, () -> compte.crediter(new BigDecimal("-10")));
+	}
+
+	@Test
+	void debiter_montantNull_leveIllegalArgumentException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(IllegalArgumentException.class, () -> compte.debiter(null));
+	}
+
+	@Test
+	void debiter_montantNegatif_leveIllegalArgumentException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(IllegalArgumentException.class, () -> compte.debiter(new BigDecimal("-10")));
+	}
+
+	@Test
+	void debiter_montantZero_leveIllegalArgumentException() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertThrows(IllegalArgumentException.class, () -> compte.debiter(BigDecimal.ZERO));
+	}
+	
 }
