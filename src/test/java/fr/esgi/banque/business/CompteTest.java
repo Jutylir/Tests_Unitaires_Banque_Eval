@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -39,5 +40,26 @@ class CompteTest {
 
 		assertEquals(expectedMessage, exception.getMessage());
 	}
+
+	@Test
+    void constructeur_soldeInitialNull_leveIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Compte("123", "Theo", null, new BigDecimal("100"))
+        );
+    }
+
+    @Test
+    void constructeur_decouvertAutoriseNull_leveIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Compte("123", "Theo", new BigDecimal("100"), null)
+        );
+    }
+
+    @Test
+    void constructeur_decouvertNegatif_leveIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("-1"))
+        );
+    }
 
 }
