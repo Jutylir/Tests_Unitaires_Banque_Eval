@@ -1,10 +1,14 @@
 package fr.esgi.banque.business;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test d'exemple fourni pour vérifier que le projet est bien configuré.
@@ -22,6 +26,18 @@ class CompteTest {
 
 		// Assert
 		assertThat(compte.getSolde()).isEqualByComparingTo("150.00");
+	}
+
+	@ParameterizedTest(name = "Numero : {0} ; Titulaire : {1} ; Message : {2}")
+	@CsvSource(value = {
+			"null, Alice, Le numéro de compte est obligatoire",
+			"FR001, null, Le titulaire est obligatoire"
+	}, nullValues = "null")
+	void throwErrorIfNumeroOrTitulaireAreNull(String numero, String titulaire, String expectedMessage) {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> new Compte(numero, titulaire, new BigDecimal("100.00"), new BigDecimal("200")));
+
+		assertEquals(expectedMessage, exception.getMessage());
 	}
 
 }
