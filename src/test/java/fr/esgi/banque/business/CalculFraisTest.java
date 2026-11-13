@@ -15,9 +15,9 @@ class CalculFraisTest {
 
     @ParameterizedTest
     @CsvSource({
-        "-1",
-        "0",
-        "17"
+            "-1",
+            "0",
+            "17"
     })
     void fraisMensuels_titulaireMineur_leveIllegalArgumentException(int age) {
 
@@ -27,9 +27,8 @@ class CalculFraisTest {
 
         // Act
         IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> calculFrais.fraisMensuels(age, soldeMoyen, false)
-        );
+                IllegalArgumentException.class,
+                () -> calculFrais.fraisMensuels(age, soldeMoyen, false));
 
         // Assert
         assertEquals("Le titulaire doit être majeur", exception.getMessage());
@@ -37,11 +36,11 @@ class CalculFraisTest {
 
     @ParameterizedTest
     @CsvSource({
-        "18",
-        "19",
-        "26",
-        "27",
-        "65"
+            "18",
+            "19",
+            "26",
+            "27",
+            "65"
     })
     void fraisMensuels_titulaireMajeur_neLevePasException(int age) {
 
@@ -51,13 +50,11 @@ class CalculFraisTest {
 
         // Act
         BigDecimal resultat = assertDoesNotThrow(
-            () -> calculFrais.fraisMensuels(age, soldeMoyen, false)
-        );
+                () -> calculFrais.fraisMensuels(age, soldeMoyen, false));
 
         // Assert
         assertNotNull(resultat);
     }
-
 
     // F1 - Le solde moyen est obligatoire.
 
@@ -70,11 +67,35 @@ class CalculFraisTest {
 
         // Act
         IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> calculFrais.fraisMensuels(age, null, false)
-        );
+                IllegalArgumentException.class,
+                () -> calculFrais.fraisMensuels(age, null, false));
 
         // Assert
         assertEquals("Le solde moyen est obligatoire", exception.getMessage());
     }
+
+    // F2 - Les frais de tenue de compte sont de 2,00 € par mois.
+
+    @ParameterizedTest
+    @CsvSource({
+            "30, 500",
+            "40, 100",
+            "50, 999",
+            "60, 0"
+    })
+    void fraisMensuels_conditionsNormales_retourneDeuxEuros(
+            int age, String solde) {
+
+        // Arrange
+        CalculFrais calculFrais = new CalculFrais();
+        BigDecimal soldeMoyen = new BigDecimal(solde);
+
+        // Act
+        BigDecimal resultat = calculFrais.fraisMensuels(
+                age, soldeMoyen, false);
+
+        // Assert
+        assertEquals(0, new BigDecimal("2.00").compareTo(resultat));
+    }
+
 }
