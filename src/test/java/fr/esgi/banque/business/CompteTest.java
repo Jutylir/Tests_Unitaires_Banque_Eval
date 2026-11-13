@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test d'exemple fourni pour vérifier que le projet est bien configuré.
@@ -127,4 +129,40 @@ class CompteTest {
 
 		assertEquals(0, soldeInitial.compareTo(compte.getSolde()));
 	}
+
+	@Test
+	void estVide_soldeZero_retourneTrue() {
+		Compte compte = new Compte("123", "Theo", BigDecimal.ZERO, new BigDecimal("50"));
+
+		assertTrue(compte.estVide());
+	}
+
+	@Test
+	void estVide_soldeZeroAvecDecimales_retourneTrue() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("0.00"), new BigDecimal("50"));
+
+		assertTrue(compte.estVide());
+	}
+
+	@Test
+	void estVide_soldeZeroAvecPlusieursDecimales_retourneTrue() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("0.000"), new BigDecimal("50"));
+
+		assertTrue(compte.estVide());
+	}
+
+	@Test
+	void estVide_soldePositif_retourneFalse() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+
+		assertFalse(compte.estVide());
+	}
+
+	@Test
+	void estVide_soldeNegatif_retourneFalse() {
+		Compte compte = new Compte("123", "Theo", new BigDecimal("-10"), new BigDecimal("50"));
+
+		assertFalse(compte.estVide());
+	}
+
 }
