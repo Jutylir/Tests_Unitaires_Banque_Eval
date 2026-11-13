@@ -98,4 +98,48 @@ class CalculFraisTest {
         assertEquals(0, new BigDecimal("2.00").compareTo(resultat));
     }
 
+    // F3 - Les frais de tenue sont offerts aux titulaires de moins de 26 ans.
+
+    @ParameterizedTest
+    @CsvSource({
+            "18",
+            "20",
+            "24",
+            "25"
+    })
+    void fraisMensuels_titulaireMoinsDe26Ans_fraisOfferts(int age) {
+
+        // Arrange
+        CalculFrais calculFrais = new CalculFrais();
+        BigDecimal soldeMoyen = new BigDecimal("500");
+
+        // Act
+        BigDecimal resultat = calculFrais.fraisMensuels(
+                age, soldeMoyen, false);
+
+        // Assert
+        assertEquals(0, BigDecimal.ZERO.compareTo(resultat));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "26",
+            "27",
+            "30",
+            "50"
+    })
+    void fraisMensuels_titulaireDe26AnsOuPlus_fraisNonOfferts(int age) {
+
+        // Arrange
+        CalculFrais calculFrais = new CalculFrais();
+        BigDecimal soldeMoyen = new BigDecimal("500");
+
+        // Act
+        BigDecimal resultat = calculFrais.fraisMensuels(
+                age, soldeMoyen, false);
+
+        // Assert
+        assertEquals(0, new BigDecimal("2.00").compareTo(resultat));
+    }
+
 }
