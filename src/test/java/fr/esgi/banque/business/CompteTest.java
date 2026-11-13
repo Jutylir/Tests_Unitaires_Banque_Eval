@@ -1,196 +1,302 @@
+
 package fr.esgi.banque.business;
+
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.math.BigDecimal;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-/**
- * Test d'exemple fourni pour vérifier que le projet est bien configuré.
- * À compléter (partie A).
- */
 class CompteTest {
 
-	@Test
-	void shouldIncreaseBalanceWhenCrediting() {
-		// Arrange
-		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100.00"), new BigDecimal("200"));
+    // C1 - Le numéro et le titulaire sont obligatoires
 
-		// Act
-		compte.crediter(new BigDecimal("50.00"));
+    @ParameterizedTest
+    @CsvSource(value = {
+        "null, Alice, Le numéro de compte est obligatoire",
+        "FR001, null, Le titulaire est obligatoire",
+        "'', Alice, Le numéro de compte est obligatoire",
+        "FR001, '', Le titulaire est obligatoire",
+        "'   ', Alice, Le numéro de compte est obligatoire",
+        "FR001, '   ', Le titulaire est obligatoire"
+    }, nullValues = "null")
+    void constructeur_numeroOuTitulaireInvalide_leveIllegalArgumentException(
+            String numero, String titulaire, String messageAttendu) {
 
-		// Assert
-		assertThat(compte.getSolde()).isEqualByComparingTo("150.00");
-	}
+        // Arrange
+        BigDecimal solde = new BigDecimal("100");
+        BigDecimal decouvert = new BigDecimal("200");
 
-	@ParameterizedTest(name = "Numero : {0} ; Titulaire : {1} ; Message : {2}")
-	@CsvSource(value = {
-			"null, Alice, Le numéro de compte est obligatoire",
-			"FR001, null, Le titulaire est obligatoire"
-	}, nullValues = "null")
-	void throwErrorIfNumeroOrTitulaireAreNull(String numero, String titulaire, String expectedMessage) {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> new Compte(numero, titulaire, new BigDecimal("100.00"), new BigDecimal("200")));
+        // Act
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> new Compte(numero, titulaire, solde, decouvert)
+        );
 
-		assertEquals(expectedMessage, exception.getMessage());
-	}
+        // Assert
+        assertEquals(messageAttendu, exception.getMessage());
+    }
 
-	@Test
-	void constructeur_soldeInitialNull_leveIllegalArgumentException() {
-		assertThrows(IllegalArgumentException.class, () -> new Compte("123", "Theo", null, new BigDecimal("100")));
-	}
 
-	@Test
-	void constructeur_decouvertAutoriseNull_leveIllegalArgumentException() {
-		assertThrows(IllegalArgumentException.class, () -> new Compte("123", "Theo", new BigDecimal("100"), null));
-	}
+    // C2 - Le solde initial et le découvert autorisé sont obligatoires.
+    // Le découvert doit être positif ou nul.
 
-	@Test
-	void constructeur_decouvertNegatif_leveIllegalArgumentException() {
-		assertThrows(IllegalArgumentException.class,
-				() -> new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("-1")));
-	}
+    @ParameterizedTest
+    @CsvSource(value = {
+        "null, 100",
+        "100, null"
+    }, nullValues = "null")
+    void constructeur_soldeOuDecouvertNull_leveIllegalArgumentException(
+            String solde, String decouvert) {
 
-	@Test
-	void crediter_montantNull_leveIllegalArgumentException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Arrange
+        BigDecimal soldeInitial = solde == null ? null : new BigDecimal(solde);
+        BigDecimal decouvertAutorise = decouvert == null ? null : new BigDecimal(decouvert);
 
-		assertThrows(IllegalArgumentException.class, () -> compte.crediter(null));
-	}
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () ->
+            new Compte("123", "Theo", soldeInitial, decouvertAutorise)
+        );
+    }
 
-	@Test
-	void crediter_montantNegatif_leveIllegalArgumentException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+    @ParameterizedTest
+    @CsvSource({
+        "-100",
+        "-0.01"
+    })
+    void constructeur_decouvertNegatif_leveIllegalArgumentException(String decouvert) {
 
-		assertThrows(IllegalArgumentException.class, () -> compte.crediter(new BigDecimal("-10")));
-	}
+        // Arrange
+        BigDecimal solde = new BigDecimal("100");
 
-	@Test
-	void debiter_montantNull_leveIllegalArgumentException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () ->
+            new Compte("123", "Theo", solde, new BigDecimal(decouvert))
+        );
+    }
 
-		assertThrows(IllegalArgumentException.class, () -> compte.debiter(null));
-	}
+    @ParameterizedTest
+    @CsvSource({
+        "0",
+        "0.00",
+        "0.01",
+        "100"
+    })
+    void constructeur_decouvertPositifOuNul_constructionReussie(String decouvert) {
 
-	@Test
-	void debiter_montantNegatif_leveIllegalArgumentException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Arrange
+        BigDecimal solde = new BigDecimal("100");
 
-		assertThrows(IllegalArgumentException.class, () -> compte.debiter(new BigDecimal("-10")));
-	}
+        // Act
+        Compte compte = new Compte(
+            "123", "Theo", solde, new BigDecimal(decouvert)
+        );
 
-	@Test
-	void debiter_montantZero_leveIllegalArgumentException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Assert
+        assertNotNull(compte);
+    }
 
-		assertThrows(IllegalArgumentException.class, () -> compte.debiter(BigDecimal.ZERO));
-	}
 
-	@Test
-	void debiter_soldeSuperieurALaLimite_debitAccepte() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+    // C3 - Crediter n'accepte qu'un montant strictement positif.
 
-		compte.debiter(new BigDecimal("120"));
+    @ParameterizedTest
+    @CsvSource(value = {
+        "null",
+        "0",
+        "0.00",
+        "-1",
+        "-10"
+    }, nullValues = "null")
+    void crediter_montantNulNegatifOuNull_leveIllegalArgumentException(String montant) {
 
-		assertEquals(0, new BigDecimal("-20").compareTo(compte.getSolde()));
-	}
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal("100"), new BigDecimal("50"));
+        BigDecimal montantAcrediter = montant == null ? null : new BigDecimal(montant);
 
-	@Test
-	void debiter_soldeEgalALaLimite_debitAccepte() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () ->
+            compte.crediter(montantAcrediter)
+        );
+    }
 
-		compte.debiter(new BigDecimal("150"));
+    @ParameterizedTest
+    @CsvSource({
+        "1, 101",
+        "25, 125",
+        "100, 200"
+    })
+    void crediter_montantPositif_metAJourLeSolde(String montant, String soldeAttendu) {
 
-		assertEquals(0, new BigDecimal("-50").compareTo(compte.getSolde()));
-	}
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal("100"), new BigDecimal("50"));
 
-	@Test
-	void debiter_soldeInferieurALaLimite_leveSoldeInsuffisantException() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Act
+        compte.crediter(new BigDecimal(montant));
 
-		assertThrows(SoldeInsuffisantException.class, () -> compte.debiter(new BigDecimal("151")));
-	}
+        // Assert
+        assertEquals(0, new BigDecimal(soldeAttendu).compareTo(compte.getSolde()));
+    }
 
-	@Test
-	void debiter_soldeInsuffisant_soldeInchange() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
 
-		BigDecimal soldeInitial = compte.getSolde();
+    // C4 - Debiter n'accepte qu'un montant strictement positif.
 
-		assertThrows(SoldeInsuffisantException.class, () -> compte.debiter(new BigDecimal("151")));
+    @ParameterizedTest
+    @CsvSource(value = {
+        "null",
+        "0",
+        "0.00",
+        "-1",
+        "-10"
+    }, nullValues = "null")
+    void debiter_montantNulNegatifOuNull_leveIllegalArgumentException(String montant) {
 
-		assertEquals(0, soldeInitial.compareTo(compte.getSolde()));
-	}
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal("100"), new BigDecimal("50"));
+        BigDecimal montantADebiter = montant == null ? null : new BigDecimal(montant);
 
-	@Test
-	void estVide_soldeZero_retourneTrue() {
-		Compte compte = new Compte("123", "Theo", BigDecimal.ZERO, new BigDecimal("50"));
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () ->
+            compte.debiter(montantADebiter)
+        );
+    }
 
-		assertTrue(compte.estVide());
-	}
 
-	@Test
-	void estVide_soldeZeroAvecDecimales_retourneTrue() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("0.00"), new BigDecimal("50"));
+    // C5 - Un débit ne peut pas dépasser le découvert autorisé.
+    // Atteindre exactement la limite est autorisé.
 
-		assertTrue(compte.estVide());
-	}
+    @ParameterizedTest
+    @CsvSource({
+        "1, 99",
+        "120, -20",
+        "150, -50"
+    })
+    void debiter_soldeSuperieurOuEgalALaLimite_debitAccepte(
+            String montant, String soldeAttendu) {
 
-	@Test
-	void estVide_soldeZeroAvecPlusieursDecimales_retourneTrue() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("0.000"), new BigDecimal("50"));
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal("100"), new BigDecimal("50"));
 
-		assertTrue(compte.estVide());
-	}
+        // Act
+        compte.debiter(new BigDecimal(montant));
 
-	@Test
-	void estVide_soldePositif_retourneFalse() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Assert
+        assertEquals(0, new BigDecimal(soldeAttendu).compareTo(compte.getSolde()));
+    }
 
-		assertFalse(compte.estVide());
-	}
+    @ParameterizedTest
+    @CsvSource({
+        "150.01",
+        "151",
+        "200"
+    })
+    void debiter_soldeSousLaLimite_leveSoldeInsuffisantExceptionEtNeModifiePasLeSolde(
+            String montant) {
 
-	@Test
-	void estVide_soldeNegatif_retourneFalse() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("-10"), new BigDecimal("50"));
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal("100"), new BigDecimal("50"));
+        BigDecimal soldeInitial = compte.getSolde();
 
-		assertFalse(compte.estVide());
-	}
+        // Act
+        assertThrows(SoldeInsuffisantException.class, () ->
+            compte.debiter(new BigDecimal(montant))
+        );
 
-	@Test
-	void estADecouvert_soldeNegatif_retourneTrue() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("-10"), new BigDecimal("50"));
+        // Assert
+        assertEquals(0, soldeInitial.compareTo(compte.getSolde()));
+    }
 
-		assertTrue(compte.estADecouvert());
-	}
 
-	@Test
-	void estADecouvert_soldeZero_retourneFalse() {
-		Compte compte = new Compte("123", "Theo", BigDecimal.ZERO, new BigDecimal("50"));
+    // C6 - EstVide retourne true lorsque le solde vaut zéro,
+    // quelle que soit son échelle.
 
-		assertFalse(compte.estADecouvert());
-	}
+    @ParameterizedTest
+    @CsvSource({
+        "0",
+        "0.0",
+        "0.00",
+        "0.000",
+        "0.000000"
+    })
+    void estVide_soldeZeroRetourneTrueQuelleQueSoitSonEchelle(String solde) {
 
-	@Test
-	void estADecouvert_soldePositif_retourneFalse() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("100"), new BigDecimal("50"));
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal(solde), new BigDecimal("50"));
 
-		assertFalse(compte.estADecouvert());
-	}
+        // Act
+        boolean resultat = compte.estVide();
 
-	@Test
-	void estADecouvert_soldeNegatifAvecDecimales_retourneTrue() {
-		Compte compte = new Compte("123", "Theo", new BigDecimal("-0.01"), new BigDecimal("50"));
+        // Assert
+        assertTrue(resultat);
+    }
 
-		assertTrue(compte.estADecouvert());
-	}
+    @ParameterizedTest
+    @CsvSource({
+        "0.01",
+        "100",
+        "-0.01",
+        "-100"
+    })
+    void estVide_soldeNonNulRetourneFalse(String solde) {
 
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal(solde), new BigDecimal("50"));
+
+        // Act
+        boolean resultat = compte.estVide();
+
+        // Assert
+        assertFalse(resultat);
+    }
+
+
+    // C7 - EstADecouvert retourne true lorsque le solde est strictement négatif.
+
+    @ParameterizedTest
+    @CsvSource({
+        "-0.01",
+        "-1",
+        "-10",
+        "-100.50"
+    })
+    void estADecouvert_soldeNegatifRetourneTrue(String solde) {
+
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal(solde), new BigDecimal("50"));
+
+        // Act
+        boolean resultat = compte.estADecouvert();
+
+        // Assert
+        assertTrue(resultat);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0",
+        "0.00",
+        "0.01",
+        "100"
+    })
+    void estADecouvert_soldePositifOuNulRetourneFalse(String solde) {
+
+        // Arrange
+        Compte compte = new Compte("123", "Theo",
+            new BigDecimal(solde), new BigDecimal("50"));
+
+        // Act
+        boolean resultat = compte.estADecouvert();
+
+        // Assert
+        assertFalse(resultat);
+    }
 }
