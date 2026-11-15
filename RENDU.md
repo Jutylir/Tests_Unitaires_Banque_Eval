@@ -10,3 +10,7 @@ ESGI Reims
 
 # Partie B
 - J'ai seulement réussi à faire le red de la première règle.
+
+![img.png](img.png)
+
+![img_1.png](img_1.png)
